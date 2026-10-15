@@ -17,9 +17,13 @@ class PhishingModel {
     catch (error) { request.reject(error); }
   }
   fail(error) { this.failed = true; while (this.pending.length) this.pending.shift().reject(error); }
-  predict(text) {
+  predict(input, type) {
     if (this.failed || this.process.exitCode !== null) return Promise.reject(new Error('Phishing model is unavailable.'));
-    return new Promise((resolve, reject) => { this.pending.push({ resolve, reject }); this.process.stdin.write(`${JSON.stringify({ text })}\n`, (error) => { if (error) this.fail(error); }); });
+    const payload = typeof input === 'object' && input !== null ? input : { text: input, type };
+    return new Promise((resolve, reject) => {
+      this.pending.push({ resolve, reject });
+      this.process.stdin.write(`${JSON.stringify(payload)}\n`, (error) => { if (error) this.fail(error); });
+    });
   }
 }
 module.exports = { PhishingModel };

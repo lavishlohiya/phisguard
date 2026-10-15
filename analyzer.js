@@ -57,7 +57,17 @@ function analyzeUrl(raw) {
   else add('no-https', 'Suspicious URL', 10, 'The link does not use HTTPS.');
   return { score, indicators: details.map((item) => item.text), indicatorDetails: details, valid: true, category: 'Suspicious URL' };
 }
-function riskLevel(score) { return score >= 60 ? 'High' : score >= 30 ? 'Medium' : 'Low'; }
+function riskLevel(score) { return score > 70 ? 'High' : score >= 35 ? 'Medium' : 'Low'; }
+function combineModelRisk(type, ruleScore, modelProbability) {
+  const mlScore = Math.max(0, Math.min(100, Math.round(modelProbability * 100)));
+  if (type !== 'message') return mlScore;
+  // The language model is useful as a second opinion, but it is too eager on
+  // short, ordinary messages. Keep message-only predictions light unless the
+  // transparent rule engine found supporting evidence.
+  if (ruleScore === 0) return Math.min(mlScore, 30);
+  const blended = Math.round((ruleScore * 0.6) + (mlScore * 0.4));
+  return ruleScore < 35 ? Math.min(blended, 34) : blended;
+}
 function recommendations(level, hasUrl) {
   const common = ['Do not share passwords, OTPs, PINs, or banking details in response to an unsolicited request.', 'Verify the sender through an official app, website, or phone number you find independently.'];
   if (level === 'High') return ['Do not click links, reply, pay, or share information.', ...common, 'Report the content to your bank, provider, platform, or local cybercrime reporting channel.'];
@@ -83,4 +93,4 @@ function analyze(input) {
   const riskScore = Math.max(0, Math.min(100, Math.round(result.score))); const level = riskLevel(riskScore);
   return { type, riskScore, riskLevel: level, scamCategory: result.category, detectedIndicators: result.indicators.length ? result.indicators : ['No strong suspicious indicator was detected by the configured rules.'], indicatorDetails: result.indicatorDetails, recommendedActions: recommendations(level, type === 'url') };
 }
-module.exports = { analyze, analyzeMessage, analyzeUrl, riskLevel, parseHttpUrl, recommendations };
+module.exports = { analyze, analyzeMessage, analyzeUrl, riskLevel, combineModelRisk, parseHttpUrl, recommendations };

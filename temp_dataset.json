@@ -1,0 +1,502 @@
+[
+  {
+    "type": "message",
+    "content": "Hi Asha, dinner is at 7pm tonight. See you there!",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Hi Ravi, dinner is at 8am tonight. See you there!",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Hi Mina, dinner is at 2:30pm tonight. See you there!",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Hi Arun, dinner is at noon tonight. See you there!",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Hi Leela, dinner is at 6pm tonight. See you there!",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your library book is due on Monday; renew it in the library app if needed.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your library book is due on Tuesday; renew it in the library app if needed.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your library book is due on Wednesday; renew it in the library app if needed.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your library book is due on Thursday; renew it in the library app if needed.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your library book is due on Friday; renew it in the library app if needed.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The team meeting moved to 7pm. Please bring the project notes.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The team meeting moved to 8am. Please bring the project notes.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The team meeting moved to 2:30pm. Please bring the project notes.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The team meeting moved to noon. Please bring the project notes.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The team meeting moved to 6pm. Please bring the project notes.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Reminder: your dentist appointment is on Monday at 7pm.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Reminder: your dentist appointment is on Tuesday at 8am.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Reminder: your dentist appointment is on Wednesday at 2:30pm.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Reminder: your dentist appointment is on Thursday at noon.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Reminder: your dentist appointment is on Friday at 6pm.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your parcel is scheduled for delivery on Monday. Track it in the official app.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your parcel is scheduled for delivery on Tuesday. Track it in the official app.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your parcel is scheduled for delivery on Wednesday. Track it in the official app.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your parcel is scheduled for delivery on Thursday. Track it in the official app.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your parcel is scheduled for delivery on Friday. Track it in the official app.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Happy birthday Asha! Hope you have a wonderful day.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Happy birthday Ravi! Hope you have a wonderful day.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Happy birthday Mina! Hope you have a wonderful day.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Happy birthday Arun! Hope you have a wonderful day.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Happy birthday Leela! Hope you have a wonderful day.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The electricity maintenance window is 7pm; service may be unavailable briefly.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The electricity maintenance window is 8am; service may be unavailable briefly.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The electricity maintenance window is 2:30pm; service may be unavailable briefly.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The electricity maintenance window is noon; service may be unavailable briefly.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The electricity maintenance window is 6pm; service may be unavailable briefly.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Please review the shared document before our meeting tomorrow.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Please review the shared document before our meeting tomorrow.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Please review the shared document before our meeting tomorrow.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Please review the shared document before our meeting tomorrow.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Please review the shared document before our meeting tomorrow.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your train leaves at 7pm from platform 3. Have a safe journey.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your train leaves at 8am from platform 3. Have a safe journey.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your train leaves at 2:30pm from platform 3. Have a safe journey.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your train leaves at noon from platform 3. Have a safe journey.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Your train leaves at 6pm from platform 3. Have a safe journey.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The community class is cancelled on Monday and resumes next week.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The community class is cancelled on Tuesday and resumes next week.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The community class is cancelled on Wednesday and resumes next week.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The community class is cancelled on Thursday and resumes next week.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "The community class is cancelled on Friday and resumes next week.",
+    "label": "legitimate"
+  },
+  {
+    "type": "message",
+    "content": "Urgent: your bank account will be suspended. Verify your OTP and PIN immediately. Case 1.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Urgent: your bank account will be suspended. Verify your OTP and PIN immediately. Case 2.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Urgent: your bank account will be suspended. Verify your OTP and PIN immediately. Case 3.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Urgent: your bank account will be suspended. Verify your OTP and PIN immediately. Case 4.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Urgent: your bank account will be suspended. Verify your OTP and PIN immediately. Case 5.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Your KYC is incomplete. Send your PAN card and password today or your account will close. Case 1.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Your KYC is incomplete. Send your PAN card and password today or your account will close. Case 2.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Your KYC is incomplete. Send your PAN card and password today or your account will close. Case 3.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Your KYC is incomplete. Send your PAN card and password today or your account will close. Case 4.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Your KYC is incomplete. Send your PAN card and password today or your account will close. Case 5.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Your UPI refund is waiting. Pay a processing fee now to receive the cashback. Case 1.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Your UPI refund is waiting. Pay a processing fee now to receive the cashback. Case 2.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Your UPI refund is waiting. Pay a processing fee now to receive the cashback. Case 3.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Your UPI refund is waiting. Pay a processing fee now to receive the cashback. Case 4.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Your UPI refund is waiting. Pay a processing fee now to receive the cashback. Case 5.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Congratulations, guaranteed work from home job. Pay the registration fee today. Case 1.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Congratulations, guaranteed work from home job. Pay the registration fee today. Case 2.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Congratulations, guaranteed work from home job. Pay the registration fee today. Case 3.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Congratulations, guaranteed work from home job. Pay the registration fee today. Case 4.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Congratulations, guaranteed work from home job. Pay the registration fee today. Case 5.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Invest now for guaranteed profit and double your money. Transfer the entry fee immediately. Case 1.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Invest now for guaranteed profit and double your money. Transfer the entry fee immediately. Case 2.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Invest now for guaranteed profit and double your money. Transfer the entry fee immediately. Case 3.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Invest now for guaranteed profit and double your money. Transfer the entry fee immediately. Case 4.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Invest now for guaranteed profit and double your money. Transfer the entry fee immediately. Case 5.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Security team alert: click the link to verify your password or your account will be blocked. Case 1.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Security team alert: click the link to verify your password or your account will be blocked. Case 2.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Security team alert: click the link to verify your password or your account will be blocked. Case 3.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Security team alert: click the link to verify your password or your account will be blocked. Case 4.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Security team alert: click the link to verify your password or your account will be blocked. Case 5.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "You won a prize. Pay the delivery fee by UPI immediately to claim your reward. Case 1.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "You won a prize. Pay the delivery fee by UPI immediately to claim your reward. Case 2.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "You won a prize. Pay the delivery fee by UPI immediately to claim your reward. Case 3.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "You won a prize. Pay the delivery fee by UPI immediately to claim your reward. Case 4.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "You won a prize. Pay the delivery fee by UPI immediately to claim your reward. Case 5.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Final notice from the bank: share your OTP and card number to prevent suspension. Case 1.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Final notice from the bank: share your OTP and card number to prevent suspension. Case 2.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Final notice from the bank: share your OTP and card number to prevent suspension. Case 3.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Final notice from the bank: share your OTP and card number to prevent suspension. Case 4.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Final notice from the bank: share your OTP and card number to prevent suspension. Case 5.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "A recruiter offers guaranteed income. Send the investment deposit today to start. Case 1.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "A recruiter offers guaranteed income. Send the investment deposit today to start. Case 2.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "A recruiter offers guaranteed income. Send the investment deposit today to start. Case 3.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "A recruiter offers guaranteed income. Send the investment deposit today to start. Case 4.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "A recruiter offers guaranteed income. Send the investment deposit today to start. Case 5.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Police complaint pending: update your account PIN immediately through this portal. Case 1.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Police complaint pending: update your account PIN immediately through this portal. Case 2.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Police complaint pending: update your account PIN immediately through this portal. Case 3.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Police complaint pending: update your account PIN immediately through this portal. Case 4.",
+    "label": "suspicious"
+  },
+  {
+    "type": "message",
+    "content": "Police complaint pending: update your account PIN immediately through this portal. Case 5.",
+    "label": "suspicious"
+  }
+]

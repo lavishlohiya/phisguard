@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const { analyze, recommendations } = require('./analyzer');
+const { analyze, analyzeMessage, recommendations, riskLevel, combineModelRisk } = require('./analyzer');
 const { PhishingModel } = require('./ml-service');
 
 const app = express();
@@ -24,30 +24,65 @@ app.use(express.static(publicDirectory));
 
 app.post('/api/analyze', async (req, res) => {
   try {
-    const result = analyze(req.body);
-    if (result.type === 'message') {
-      try {
-        const prediction = await phishingModel.predict(req.body.content);
-        const label = prediction.label.toLowerCase();
-        const mlFlagged = /phish|scam|fraud|malicious|spam|label[_ -]?[13]\b/.test(label);
-        const text = (req.body.content || '').trim();
-        const wordCount = text.split(/\s+/).filter(Boolean).length;
-        const hasRuleIndicators = (result.indicatorDetails && result.indicatorDetails.length > 0) || result.riskScore > 0;
-        const hasPhishSyntax = /https?:\/\/|\.com\b|\.xyz\b|\.top\b|\.net\b|urgent|account|verify|otp|login|password|kyc|bank/i.test(text);
-        
-        // Corroborate ML signal: require rule corroboration or sufficient length + suspicious keywords
-        // to avoid high false positives on casual, short greetings/text ("hi", "i love you", "event")
-        const suspicious = mlFlagged && (hasRuleIndicators || (wordCount >= 5 && text.length >= 80 && hasPhishSyntax));
-        
-        result.modelPrediction = { label: prediction.label, confidence: prediction.confidence, suspicious };
-        if (suspicious) {
-          result.riskScore = Math.max(result.riskScore, Math.round(prediction.confidence * 100));
-          result.riskLevel = result.riskScore >= 60 ? 'High' : result.riskScore >= 30 ? 'Medium' : 'Low';
-          result.recommendedActions = recommendations(result.riskLevel, false);
-          result.detectedIndicators.push(`ML model classified this message as phishing (${Math.round(prediction.confidence * 100)}% confidence).`);
-        }
-      } catch (modelError) { result.modelPrediction = { available: false, error: modelError.message }; }
+    const rawInput = req.body;
+    const type = typeof rawInput?.type === 'string' ? rawInput.type.toLowerCase() : '';
+    const content = typeof rawInput?.content === 'string' ? rawInput.content.trim() : '';
+    if (!['message', 'url'].includes(type)) throw new TypeError('type must be either "message" or "url".');
+    if (!content) throw new TypeError('content must be a non-empty string.');
+    if (content.length > 10000) throw new RangeError('content must be 10,000 characters or fewer.');
+
+    // Pretrained Model Evaluation
+    let prediction = null;
+    let mlError = null;
+    try {
+      prediction = await phishingModel.predict({ text: content, type });
+    } catch (err) {
+      mlError = err.message;
     }
+
+    let result;
+    if (prediction && !prediction.error) {
+      const phishProb = typeof prediction.phish_probability === 'number' ? prediction.phish_probability : (prediction.suspicious ? 1.0 : 0.0);
+      const ruleResult = type === 'message' ? analyzeMessage(content) : null;
+      const riskScore = combineModelRisk(type, ruleResult?.score || 0, phishProb);
+      const level = riskLevel(riskScore);
+      const isPhish = prediction.suspicious && riskScore >= 35;
+      const category = isPhish
+        ? (type === 'url' ? 'Phishing link detected by DistilBERT' : 'Phishing email/message detected by DistilBERT')
+        : (type === 'url' ? 'Legitimate URL' : 'Legitimate message');
+      
+      const detectedIndicators = isPhish
+        ? [`Pretrained DistilBERT model classified this ${type} as suspicious/phishing with ${Math.round((prediction.confidence || phishProb) * 100)}% confidence.`]
+        : [`Pretrained DistilBERT model found no phishing signatures (${Math.round((prediction.confidence || (1 - phishProb)) * 100)}% safe confidence).`];
+
+      result = {
+        type,
+        riskScore,
+        riskLevel: level,
+        scamCategory: category,
+        detectedIndicators,
+        indicatorDetails: [{
+          id: 'ml-distilbert',
+          category: isPhish ? 'Machine Learning' : 'Safe Pattern',
+          points: riskScore,
+          text: detectedIndicators[0],
+        }],
+        recommendedActions: recommendations(level, type === 'url'),
+        modelPrediction: {
+          available: true,
+          label: prediction.label,
+          confidence: prediction.confidence,
+          suspicious: prediction.suspicious,
+          phish_probability: prediction.phish_probability,
+          engine: 'DistilBERT Pretrained Model'
+        }
+      };
+    } else {
+      // Fallback to rule engine if model is temporarily loading or unavailable
+      result = analyze(req.body);
+      result.modelPrediction = { available: false, error: mlError || 'Model unavailable' };
+    }
+
     scanHistory.unshift({
       id: `${Date.now()}-${scanHistory.length}`,
       type: result.type,
@@ -75,27 +110,47 @@ app.post('/api/batch-analyze', async (req, res) => {
     const results = [];
     for (const item of items) {
       try {
-        const resObj = analyze(item);
-        if (resObj.type === 'message') {
-          try {
-            const pred = await phishingModel.predict(item.content);
-            const label = pred.label.toLowerCase();
-            const mlFlagged = /phish|scam|fraud|malicious|spam|label[_ -]?[13]\b/.test(label);
-            const text = (item.content || '').trim();
-            const wordCount = text.split(/\s+/).filter(Boolean).length;
-            const hasRuleIndicators = (resObj.indicatorDetails && resObj.indicatorDetails.length > 0) || resObj.riskScore > 0;
-            const hasPhishSyntax = /https?:\/\/|\.com\b|\.xyz\b|\.top\b|\.net\b|urgent|account|verify|otp|login|password|kyc|bank/i.test(text);
-            const susp = mlFlagged && (hasRuleIndicators || (wordCount >= 5 && text.length >= 80 && hasPhishSyntax));
-
-            resObj.modelPrediction = { label: pred.label, confidence: pred.confidence, suspicious: susp };
-            if (susp) {
-              resObj.riskScore = Math.max(resObj.riskScore, Math.round(pred.confidence * 100));
-              resObj.riskLevel = resObj.riskScore >= 60 ? 'High' : resObj.riskScore >= 30 ? 'Medium' : 'Low';
-              resObj.recommendedActions = recommendations(resObj.riskLevel, false);
-            }
-          } catch { /* ml optional */ }
+        const type = typeof item?.type === 'string' ? item.type.toLowerCase() : '';
+        const content = typeof item?.content === 'string' ? item.content.trim() : '';
+        if (!['message', 'url'].includes(type) || !content) {
+          throw new TypeError('Each batch item must have valid type ("message"|"url") and non-empty content.');
         }
-        results.push({ success: true, input: item.content.slice(0, 80), ...resObj });
+
+        let pred = null;
+        try { pred = await phishingModel.predict({ text: content, type }); } catch { /* ignore */ }
+
+        let resObj;
+        if (pred && !pred.error) {
+          const phishProb = typeof pred.phish_probability === 'number' ? pred.phish_probability : (pred.suspicious ? 1.0 : 0.0);
+          const ruleResult = type === 'message' ? analyzeMessage(content) : null;
+          const riskScore = combineModelRisk(type, ruleResult?.score || 0, phishProb);
+          const level = riskLevel(riskScore);
+          const isPhish = pred.suspicious && riskScore >= 35;
+          const category = isPhish
+            ? (type === 'url' ? 'Phishing link detected by DistilBERT' : 'Phishing email/message detected by DistilBERT')
+            : (type === 'url' ? 'Legitimate URL' : 'Legitimate message');
+          resObj = {
+            type,
+            riskScore,
+            riskLevel: level,
+            scamCategory: category,
+            detectedIndicators: [
+              `Pretrained DistilBERT model classified this ${type} with ${Math.round((pred.confidence || phishProb) * 100)}% confidence.`
+            ],
+            recommendedActions: recommendations(level, type === 'url'),
+            modelPrediction: {
+              available: true,
+              label: pred.label,
+              confidence: pred.confidence,
+              suspicious: pred.suspicious,
+              engine: 'DistilBERT Pretrained Model'
+            }
+          };
+        } else {
+          resObj = analyze(item);
+        }
+
+        results.push({ success: true, input: (item.content || '').slice(0, 80), ...resObj });
         scanHistory.unshift({
           id: `${Date.now()}-${scanHistory.length}`,
           type: resObj.type,

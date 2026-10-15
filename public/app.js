@@ -310,7 +310,7 @@ analyzeButton.addEventListener('click', async () => {
 
         <div class="result-meta">
           <div class="result-meta-item">Category: <strong>${escapeHtml(result.scamCategory)}</strong></div>
-          <div class="result-meta-item">Engine: <strong>Rule-based Signals ${result.modelPrediction?.available !== false && result.modelPrediction?.label ? '+ DistilBERT' : ''}</strong></div>
+          <div class="result-meta-item">Engine: <strong>${escapeHtml(result.modelPrediction?.engine || 'Pretrained DistilBERT Model')}</strong></div>
         </div>
 
         <div class="result-columns">
