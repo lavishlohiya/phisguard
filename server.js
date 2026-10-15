@@ -45,6 +45,7 @@ app.post('/api/analyze', async (req, res) => {
       riskScore: result.riskScore,
       riskLevel: result.riskLevel,
       scamCategory: result.scamCategory,
+      detectedIndicators: result.detectedIndicators,
       createdAt: new Date().toISOString(),
     });
     if (scanHistory.length > 50) scanHistory.pop();
@@ -53,13 +54,60 @@ app.post('/api/analyze', async (req, res) => {
   catch (error) { res.status(error instanceof RangeError ? 413 : 400).json({ error: error.message }); }
 });
 
+app.post('/api/batch-analyze', async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'items must be a non-empty array of objects { type, content }.' });
+    }
+    if (items.length > 25) {
+      return res.status(400).json({ error: 'Batch limit is 25 items per request.' });
+    }
+    const results = [];
+    for (const item of items) {
+      try {
+        const resObj = analyze(item);
+        if (resObj.type === 'message') {
+          try {
+            const pred = await phishingModel.predict(item.content);
+            const label = pred.label.toLowerCase();
+            const susp = /phish|scam|fraud|malicious|spam|label[_ -]?[13]\b/.test(label);
+            resObj.modelPrediction = { label: pred.label, confidence: pred.confidence, suspicious: susp };
+            if (susp) {
+              resObj.riskScore = Math.max(resObj.riskScore, Math.round(pred.confidence * 100));
+              resObj.riskLevel = resObj.riskScore >= 60 ? 'High' : resObj.riskScore >= 30 ? 'Medium' : 'Low';
+              resObj.recommendedActions = recommendations(resObj.riskLevel, false);
+            }
+          } catch { /* ml optional */ }
+        }
+        results.push({ success: true, input: item.content.slice(0, 80), ...resObj });
+        scanHistory.unshift({
+          id: `${Date.now()}-${scanHistory.length}`,
+          type: resObj.type,
+          riskScore: resObj.riskScore,
+          riskLevel: resObj.riskLevel,
+          scamCategory: resObj.scamCategory,
+          detectedIndicators: resObj.detectedIndicators,
+          createdAt: new Date().toISOString(),
+        });
+        if (scanHistory.length > 50) scanHistory.pop();
+      } catch (err) {
+        results.push({ success: false, input: (item?.content || '').slice(0, 80), error: err.message });
+      }
+    }
+    res.json({ count: results.length, results });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/dashboard', (req, res) => {
   const counts = { High: 0, Medium: 0, Low: 0 };
   scanHistory.forEach((scan) => { counts[scan.riskLevel] += 1; });
   res.json({
     totalScans: scanHistory.length,
     riskCounts: counts,
-    recentScans: scanHistory.slice(0, 8),
+    recentScans: scanHistory.slice(0, 10),
   });
 });
 

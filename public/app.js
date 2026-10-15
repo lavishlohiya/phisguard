@@ -19,7 +19,8 @@ const demos = [
   ['Message', 'Urgent: your bank account will be suspended. Verify your OTP and PIN immediately.'],
   ['Message', 'Congratulations, you are selected for a work-from-home job. Pay a registration fee today.'],
   ['URL', 'https://paypal.secure-login.example.com/account/verify'],
-  ['URL', 'https://example.com']
+  ['URL', 'https://example.com'],
+  ['URL', 'http://bit.ly/secure-banking-portal-verify']
 ];
 
 function escapeHtml(value) {
@@ -183,6 +184,8 @@ function handleQrFile(file) {
   reader.readAsDataURL(file);
 }
 
+let cachedScans = [];
+
 async function fetchDashboard() {
   try {
     const res = await fetch(`${apiOrigin}/api/dashboard`);
@@ -192,6 +195,10 @@ async function fetchDashboard() {
     if (statHigh) statHigh.textContent = (data.riskCounts && data.riskCounts.High) || 0;
     if (statMed) statMed.textContent = (data.riskCounts && data.riskCounts.Medium) || 0;
     if (statLow) statLow.textContent = (data.riskCounts && data.riskCounts.Low) || 0;
+
+    if (data.recentScans) {
+      cachedScans = data.recentScans;
+    }
 
     if (historyTbody && data.recentScans && data.recentScans.length > 0) {
       historyTbody.innerHTML = data.recentScans.map((scan) => {
@@ -211,6 +218,51 @@ async function fetchDashboard() {
   } catch (err) {
     console.debug('Dashboard fetch suppressed:', err);
   }
+}
+
+const btnExportCsv = document.querySelector('#btn-export-csv');
+const btnExportJson = document.querySelector('#btn-export-json');
+
+if (btnExportCsv) {
+  btnExportCsv.addEventListener('click', () => {
+    if (!cachedScans || cachedScans.length === 0) {
+      alert('No scans in current session to export yet.');
+      return;
+    }
+    const headers = ['ID', 'Type', 'Category', 'RiskLevel', 'RiskScore', 'Timestamp'];
+    const rows = cachedScans.map((s) => [
+      `"${s.id || ''}"`,
+      `"${s.type || ''}"`,
+      `"${(s.scamCategory || '').replace(/"/g, '""')}"`,
+      `"${s.riskLevel || ''}"`,
+      s.riskScore ?? 0,
+      `"${s.createdAt || ''}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `phishguard-telemetry-${Date.now()}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+if (btnExportJson) {
+  btnExportJson.addEventListener('click', () => {
+    if (!cachedScans || cachedScans.length === 0) {
+      alert('No scans in current session to export yet.');
+      return;
+    }
+    const blob = new Blob([JSON.stringify(cachedScans, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `phishguard-telemetry-${Date.now()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  });
 }
 
 analyzeButton.addEventListener('click', async () => {

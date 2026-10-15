@@ -34,3 +34,8 @@ test('handles legitimate and borderline messages conservatively', () => {
   assert.equal(analyze({ type: 'message', content: 'Your OTP is 123456.' }).riskLevel, 'Low');
   assert.equal(analyze({ type: 'message', content: 'Your order will arrive tomorrow. Track it in the official app.' }).riskLevel, 'Low');
 });
+test('flags URL shortener services that obscure the destination', () => {
+  const result = analyze({ type: 'url', content: 'https://bit.ly/bank-verification-token' });
+  assert.ok(result.indicatorDetails.some((item) => item.id === 'url-shortener'));
+});
+

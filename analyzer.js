@@ -47,6 +47,8 @@ function analyzeUrl(raw) {
   if (url.href.length > 140 || url.pathname.length > 80) add('long-structure', 'Suspicious URL', 10, 'The URL has an unusually long path or query string.');
   if (/%(?:25|2f|5c|40)/i.test(url.href)) add('encoded-structure', 'Suspicious URL', 14, 'Encoded characters may obscure the destination.');
   if (SUSPICIOUS_PATH_WORDS.test(`${hostname}${url.pathname}`)) add('suspicious-path', 'Suspicious URL', 10, 'The host or path asks for account, verification, payment, or support action.');
+  const URL_SHORTENERS = /^(?:bit\.ly|tinyurl\.com|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|rebrand\.ly|cutt\.ly|shorturl\.at|tiny\.cc)$/i;
+  if (URL_SHORTENERS.test(domain)) add('url-shortener', 'Suspicious URL', 18, 'The link uses a URL shortener service that obscures the ultimate destination.');
   if (labels.slice(0, -2).some((label) => KNOWN_BRANDS.some((brand) => label.includes(brand))) && !KNOWN_BRANDS.some((brand) => domain.startsWith(`${brand}.`) || domain === `${brand}.com`)) add('brand-lookalike', 'Suspicious URL', 24, 'A trusted brand word appears in a subdomain, not the apparent destination domain.');
   const SUSPICIOUS_TLDS = /\.(?:top|xyz|buzz|fit|work|surf|sbs|monster|rest|click|loan|gq|cf|ml|ga|tk)$/i;
   if (SUSPICIOUS_TLDS.test(domain)) add('suspicious-tld', 'Suspicious URL', 16, 'The domain utilizes a high-risk or commonly abused top-level domain (TLD).');
