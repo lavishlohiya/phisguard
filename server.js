@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const { analyze, analyzeMessage, recommendations, riskLevel, combineModelRisk } = require('./analyzer');
+const { analyze, analyzeMessage, analyzeUrl, recommendations, riskLevel, combineModelRisk } = require('./analyzer');
 const { PhishingModel } = require('./ml-service');
 
 const app = express();
@@ -30,6 +30,7 @@ app.post('/api/analyze', async (req, res) => {
     if (!['message', 'url'].includes(type)) throw new TypeError('type must be either "message" or "url".');
     if (!content) throw new TypeError('content must be a non-empty string.');
     if (content.length > 10000) throw new RangeError('content must be 10,000 characters or fewer.');
+    if (type === 'url' && !analyzeUrl(content).valid) throw new TypeError('Enter a valid HTTP or HTTPS URL with a valid hostname.');
 
     // Pretrained Model Evaluation
     let prediction = null;
@@ -43,13 +44,11 @@ app.post('/api/analyze', async (req, res) => {
     let result;
     if (prediction && !prediction.error) {
       const phishProb = typeof prediction.phish_probability === 'number' ? prediction.phish_probability : (prediction.suspicious ? 1.0 : 0.0);
-      const ruleResult = type === 'message' ? analyzeMessage(content) : null;
-      const riskScore = combineModelRisk(type, ruleResult?.score || 0, phishProb);
+      const ruleResult = type === 'message' ? analyzeMessage(content) : analyzeUrl(content);
+      const riskScore = type === 'url' && ruleResult.verifiedDomain ? ruleResult.score : combineModelRisk(type, ruleResult?.score || 0, phishProb);
       const level = riskLevel(riskScore);
       const isPhish = prediction.suspicious && riskScore >= 35;
-      const category = isPhish
-        ? (type === 'url' ? 'Phishing link detected by DistilBERT' : 'Phishing email/message detected by DistilBERT')
-        : (type === 'url' ? 'Legitimate URL' : 'Legitimate message');
+      const category = isPhish ? (type === 'url' ? 'Phishing URL detected by machine learning' : 'Phishing email/message detected by rule/model analysis') : (type === 'url' ? 'Legitimate URL' : 'Legitimate message');
       
       const detectedIndicators = isPhish
         ? [`Pretrained DistilBERT model classified this ${type} as suspicious/phishing with ${Math.round((prediction.confidence || phishProb) * 100)}% confidence.`]
@@ -60,12 +59,14 @@ app.post('/api/analyze', async (req, res) => {
         riskScore,
         riskLevel: level,
         scamCategory: category,
-        detectedIndicators,
-        indicatorDetails: [{
+        detectedIndicators: type === 'url' ? [...new Set([...ruleResult.indicators, ...detectedIndicators])] : detectedIndicators,
+        indicatorDetails: type === 'url' ? [...ruleResult.indicatorDetails, {
           id: 'ml-distilbert',
-          category: isPhish ? 'Machine Learning' : 'Safe Pattern',
+          category: 'Machine Learning',
           points: riskScore,
           text: detectedIndicators[0],
+        }] : [{
+          id: 'ml-distilbert', category: isPhish ? 'Machine Learning' : 'Safe Pattern', points: riskScore, text: detectedIndicators[0],
         }],
         recommendedActions: recommendations(level, type === 'url'),
         modelPrediction: {
@@ -74,7 +75,7 @@ app.post('/api/analyze', async (req, res) => {
           confidence: prediction.confidence,
           suspicious: prediction.suspicious,
           phish_probability: prediction.phish_probability,
-          engine: 'DistilBERT Pretrained Model'
+          engine: prediction.engine || 'URL ML model'
         }
       };
     } else {
@@ -115,6 +116,7 @@ app.post('/api/batch-analyze', async (req, res) => {
         if (!['message', 'url'].includes(type) || !content) {
           throw new TypeError('Each batch item must have valid type ("message"|"url") and non-empty content.');
         }
+        if (type === 'url' && !analyzeUrl(content).valid) throw new TypeError('Enter a valid HTTP or HTTPS URL with a valid hostname.');
 
         let pred = null;
         try { pred = await phishingModel.predict({ text: content, type }); } catch { /* ignore */ }
@@ -122,8 +124,8 @@ app.post('/api/batch-analyze', async (req, res) => {
         let resObj;
         if (pred && !pred.error) {
           const phishProb = typeof pred.phish_probability === 'number' ? pred.phish_probability : (pred.suspicious ? 1.0 : 0.0);
-          const ruleResult = type === 'message' ? analyzeMessage(content) : null;
-          const riskScore = combineModelRisk(type, ruleResult?.score || 0, phishProb);
+          const ruleResult = type === 'message' ? analyzeMessage(content) : analyzeUrl(content);
+          const riskScore = type === 'url' && ruleResult.verifiedDomain ? ruleResult.score : combineModelRisk(type, ruleResult?.score || 0, phishProb);
           const level = riskLevel(riskScore);
           const isPhish = pred.suspicious && riskScore >= 35;
           const category = isPhish
@@ -143,7 +145,7 @@ app.post('/api/batch-analyze', async (req, res) => {
               label: pred.label,
               confidence: pred.confidence,
               suspicious: pred.suspicious,
-              engine: 'DistilBERT Pretrained Model'
+            engine: pred.engine || 'URL ML model'
             }
           };
         } else {

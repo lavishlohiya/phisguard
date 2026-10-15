@@ -1,52 +1,31 @@
 # PhishGuard
 
-PhishGuard is a CyberCup 6.0 prototype for explainable screening of suspicious messages and HTTP(S) URLs. Messages use the local rule engine plus the Hugging Face model configured in `model.py`; URLs are parsed locally and never fetched.
+PhishGuard screens messages and URLs without fetching the supplied URL. URL detection combines transparent structural rules and a trained scikit-learn model using character-level TF-IDF, structural URL features, and Logistic Regression. Inputs may be `example.com`, `www.example.com`, `http://...`, or `https://...`; they are normalized consistently.
 
-## Setup
-
-Requires Node.js 18+, Python 3.10+, and the Python `transformers` package.
+## Run
 
 ```bash
-npm install
-npm start
+npm.cmd install
+npm.cmd test
+npm.cmd start
 ```
 
-Install the model dependency once with `python -m pip install transformers torch`. On first startup, Hugging Face downloads the configured model. If Python or the model is unavailable, the rule-based analyzer continues to work and the API reports that the model was unavailable.
+The existing API and frontend remain at `POST /api/analyze`, `POST /api/batch-analyze`, and `http://localhost:3000`.
 
-Open `http://localhost:3000`. Development mode is `npm run dev`; health is available at `/api/health`.
+## Reproduce the URL model
 
-## Architecture
-
-- `server.js` serves the existing UI, validates API requests through `analyze`, and sends message text to the long-lived Python worker in `ml-service.js`.
-- `model.py` loads `cybersectony/phishing-email-detection-distilbert_v2.4.1` once and communicates through JSON lines. `PYTHON_BIN` can be set when the Python executable is not named `python`.
-- `analyzer.js` has separate message and URL pipelines. URL mode requires a complete HTTP/HTTPS URL and only inspects its parsed text: hostname, subdomains, look-alike brand placement, IP hosts, path/query structure, encoding, ports, and HTTPS context.
-- Message mode scores weighted language indicators and combinations for credential theft, KYC/bank impersonation, payment/refund/UPI fraud, and job/investment fraud. It does not run URL-structure rules.
-- `public/` contains the unchanged Express-served UI, with validation messages, evidence, categories, safe actions, and five demo cases using the real API.
-- `data/dataset.js` contains 100 labelled examples (50 legitimate, 50 suspicious). `evaluate.js` runs the real analyzer over all examples.
-
-## API
-
-`POST /api/analyze` accepts:
-
-```json
-{ "type": "message", "content": "text to inspect" }
-```
-
-or `{ "type": "url", "content": "https://example.com" }`.
-
-The response includes `riskScore` (0–100), `riskLevel`, `scamCategory`, `detectedIndicators` with evidence, `indicatorDetails` with weights, and `recommendedActions`. Invalid URL input returns HTTP 400 and is never assigned a risk score.
-
-## Verification
+Python 3.10+ is required. The preparation script downloads verified online phishing URLs from [PhishTank](https://www.phishtank.com/) and legitimate-domain examples from the current [Tranco research ranking](https://tranco-list.eu/). It does not visit any URL.
 
 ```bash
-npm test
-npm run evaluate
+python -m pip install --user -r requirements.txt
+python prepare_url_dataset.py --phishing-limit 5000 --legitimate-limit 5000
+python train_url_model.py --data data/url_dataset.jsonl --model data/url_model.joblib --seed 42
 ```
 
-The evaluation command prints measured precision, recall, F1, false-positive rate, and a confusion matrix from the checked-in labelled dataset. Results are intentionally generated at run time rather than written as claims here.
+The model command prints metrics from a stratified 80/20 holdout and writes the local artifact to `data/url_model.joblib`. Dataset and model artifacts are intentionally gitignored because the source feeds change. If the artifact is absent, the API continues with the local URL rules and reports the model as unavailable.
 
-Latest local run (`npm run evaluate`, 100 examples): precision **1.00**, recall **0.90**, F1 **0.9474**, false-positive rate **0.00**. Confusion matrix: TP **45**, TN **50**, FP **0**, FN **5**. These are measurements on this small checked-in dataset only, not a production benchmark.
+The run performed during development used 10,000 samples (5,000 per class), seed 42, and 2,000 held-out URLs. Accuracy was **0.9785**, precision **0.9868**, recall **0.9700**, and F1 **0.9783**; the confusion matrix was `[[987, 13], [30, 970]]`. These are measurements on that dated source snapshot, not a production benchmark.
 
-## Limitations
+## Safety and scope
 
-This is a transparent screening aid, not a fraud determination. It does not resolve domains, check reputation, inspect page content, or replace independent verification. Rule-based detectors can miss new wording and may flag legitimate messages that use similar language. HTTPS indicates transport encryption only, not trustworthiness. The small demo dataset is not representative of production traffic; metrics should not be generalized beyond it.
+Known legitimate domains are not blindly trusted: verified-domain handling only prevents model false positives for the configured domains, while deceptive subdomains, typo-squats, IP hosts, suspicious paths, encodings, ports, and high-risk TLDs remain inspectable. HTTPS is treated as transport encryption, not proof of legitimacy. The detector is a screening aid and does not resolve domains or inspect page content.

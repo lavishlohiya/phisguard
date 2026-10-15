@@ -42,12 +42,14 @@ function validate(type, value) {
   if (!value.trim()) return 'Add a message or URL to prepare an analysis.';
   if (type === 'url') {
     try {
-      const url = new URL(value.trim());
-      if (!/^https?:$/.test(url.protocol) || !url.hostname || /[\s<>"{}|\\^`]/.test(value)) {
+      const candidate = value.trim();
+      const normalized = /^https?:\/\//i.test(candidate) ? candidate : `https://${candidate}`;
+      const url = new URL(normalized);
+      if (!/^https?:$/.test(url.protocol) || !url.hostname || url.username || url.password || /[\s<>"{}|\\^`]/.test(candidate)) {
         throw new Error();
       }
     } catch {
-      return 'URL mode requires a complete, valid HTTP or HTTPS URL.';
+      return 'URL mode requires a valid domain or HTTP/HTTPS URL.';
     }
   }
   return '';

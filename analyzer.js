@@ -17,17 +17,23 @@ const COMBINATIONS = [
   { ids: ['job-investment', 'payment'], points: 14, category: 'Job or investment fraud', label: 'The offer asks for money or a fee.' },
   { ids: ['threat', 'action-link'], points: 12, category: 'Credential theft', label: 'A threat is paired with a link or portal action.' },
 ];
-const KNOWN_BRANDS = ['paypal', 'google', 'microsoft', 'amazon', 'apple', 'netflix', 'whatsapp', 'instagram', 'facebook', 'sbi', 'hdfc', 'icici', 'axisbank'];
+const KNOWN_BRANDS = ['paypal', 'google', 'microsoft', 'amazon', 'apple', 'netflix', 'whatsapp', 'instagram', 'facebook', 'linkedin', 'dropbox', 'adobe', 'spotify', 'steam', 'coinbase', 'binance', 'sbi', 'hdfc', 'icici', 'axisbank', 'airtel', 'jio', 'flipkart'];
+// This list only prevents false brand-lookalike alerts for verified domains;
+// it never makes a URL safe by itself.
+const VERIFIED_DOMAINS = new Set(['amazon.in', 'paypal.com', 'google.com', 'microsoft.com', 'apple.com', 'netflix.com']);
 const SUSPICIOUS_PATH_WORDS = /(?:login|log-in|signin|sign-in|verify|verification|secure|update|refund|payment|account|wallet|support|claim|kyc|password)/i;
 function normalizeObfuscatedText(value) { return value.replace(/\b(?:[a-z0-9]\s+){2,}[a-z0-9]\b/gi, (match) => match.replace(/\s+/g, '')); }
 function isValidIpv4(hostname) { return IP_ADDRESS.test(hostname) && hostname.split('.').every((part) => Number(part) <= 255); }
 function registrableDomain(hostname) { const labels = hostname.split('.'); return labels.length >= 2 ? labels.slice(-2).join('.') : hostname; }
 function evidence(value, match) { return `Evidence: "${(match?.[0] || value).replace(/\s+/g, ' ').slice(0, 100)}"`; }
+function normalizedBrand(value) { return value.toLowerCase().replace(/[013457]/g, (char) => ({ '0': 'o', '1': 'l', '3': 'e', '4': 'a', '5': 's', '7': 't' }[char])); }
+function editDistance(a, b) { const row = [...Array(b.length + 1).keys()]; for (let i = 1; i <= a.length; i += 1) { let diagonal = row[0]; row[0] = i; for (let j = 1; j <= b.length; j += 1) { const above = row[j]; row[j] = a[i - 1] === b[j - 1] ? diagonal : 1 + Math.min(row[j], row[j - 1], diagonal); diagonal = above; } } return row[b.length]; }
 function parseHttpUrl(raw) {
   const candidate = raw.trim();
-  if (!/^https?:\/\//i.test(candidate) || /[\s<>"{}|\\^`]/.test(candidate)) return null;
+  if (!candidate || /[\s<>"{}|\\^`]/.test(candidate)) return null;
   try {
-    const url = new URL(candidate);
+    const normalized = /^https?:\/\//i.test(candidate) ? candidate : `https://${candidate}`;
+    const url = new URL(normalized);
     if (!['http:', 'https:'].includes(url.protocol) || !url.hostname || url.username || url.password) return null;
     if (url.hostname.includes('..') || (url.hostname !== 'localhost' && !url.hostname.includes('.') && !isValidIpv4(url.hostname))) return null;
     if (isValidIpv4(url.hostname) && url.hostname.split('.').some((part) => Number(part) > 255)) return null;
@@ -49,18 +55,29 @@ function analyzeUrl(raw) {
   if (SUSPICIOUS_PATH_WORDS.test(`${hostname}${url.pathname}`)) add('suspicious-path', 'Suspicious URL', 10, 'The host or path asks for account, verification, payment, or support action.');
   const URL_SHORTENERS = /^(?:bit\.ly|tinyurl\.com|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|rebrand\.ly|cutt\.ly|shorturl\.at|tiny\.cc)$/i;
   if (URL_SHORTENERS.test(domain)) add('url-shortener', 'Suspicious URL', 18, 'The link uses a URL shortener service that obscures the ultimate destination.');
-  if (labels.slice(0, -2).some((label) => KNOWN_BRANDS.some((brand) => label.includes(brand))) && !KNOWN_BRANDS.some((brand) => domain.startsWith(`${brand}.`) || domain === `${brand}.com`)) add('brand-lookalike', 'Suspicious URL', 24, 'A trusted brand word appears in a subdomain, not the apparent destination domain.');
+  const verifiedDomain = [...VERIFIED_DOMAINS].some((allowed) => hostname === allowed || hostname.endsWith(`.${allowed}`));
+  if (!verifiedDomain && labels.slice(0, -2).some((label) => KNOWN_BRANDS.some((brand) => label.includes(brand)))) add('brand-lookalike', 'Suspicious URL', 24, 'A trusted brand word appears in a subdomain, not the apparent destination domain.');
+  const baseLabel = labels.length >= 2 ? labels[labels.length - 2] : labels[0];
+  if (!verifiedDomain && KNOWN_BRANDS.some((brand) => normalizedBrand(baseLabel) === normalizedBrand(brand) && baseLabel !== brand)) add('typosquat-brand', 'Suspicious URL', 24, 'The domain closely resembles a trusted brand name with substituted characters.');
+  if (!verifiedDomain && baseLabel.length >= 4) { const closest = KNOWN_BRANDS.map((brand) => ({ brand, distance: editDistance(baseLabel, brand) })).sort((a, b) => a.distance - b.distance)[0]; if (closest && closest.distance > 0 && closest.distance <= Math.max(1, Math.floor(closest.brand.length * 0.25))) add('similar-brand-domain', 'Suspicious URL', 22, `The registrable domain is very similar to the trusted brand name "${closest.brand}".`); }
   const SUSPICIOUS_TLDS = /\.(?:top|xyz|buzz|fit|work|surf|sbs|monster|rest|click|loan|gq|cf|ml|ga|tk)$/i;
   if (SUSPICIOUS_TLDS.test(domain)) add('suspicious-tld', 'Suspicious URL', 16, 'The domain utilizes a high-risk or commonly abused top-level domain (TLD).');
-  if (KNOWN_BRANDS.some((b) => domain.includes(`-${b}`) || domain.includes(`${b}-`)) && !KNOWN_BRANDS.some((b) => domain === `${b}.com`)) add('typosquat-brand', 'Suspicious URL', 24, 'The domain name combines a known brand with hyphens or prefixes/suffixes.');
+  const domainTokens = baseLabel.split('-').filter(Boolean);
+  if (!verifiedDomain && domainTokens.some((token) => KNOWN_BRANDS.some((brand) => normalizedBrand(token) === normalizedBrand(brand))) && !KNOWN_BRANDS.some((b) => domain === `${b}.com`)) add('typosquat-brand', 'Suspicious URL', 24, 'The domain name combines a known brand with hyphens or prefixes/suffixes.');
   if (url.protocol === 'https:') details.push({ id: 'https', category: 'Context', points: 0, text: 'HTTPS is present, but encryption alone does not prove that the destination is legitimate.' });
   else add('no-https', 'Suspicious URL', 10, 'The link does not use HTTPS.');
-  return { score, indicators: details.map((item) => item.text), indicatorDetails: details, valid: true, category: 'Suspicious URL' };
+  return { score, indicators: details.map((item) => item.text), indicatorDetails: details, valid: true, verifiedDomain, category: 'Suspicious URL' };
 }
 function riskLevel(score) { return score > 70 ? 'High' : score >= 35 ? 'Medium' : 'Low'; }
 function combineModelRisk(type, ruleScore, modelProbability) {
   const mlScore = Math.max(0, Math.min(100, Math.round(modelProbability * 100)));
-  if (type !== 'message') return mlScore;
+  if (type !== 'message') {
+    // ML is a useful second opinion for URLs, but an unfamiliar hostname alone
+    // is not evidence of phishing. Structural/lookalike rules must support a
+    // high URL score, which keeps ordinary unknown domains in the low band.
+    if (ruleScore === 0) return Math.min(mlScore, 30);
+    return Math.max(ruleScore, Math.round((ruleScore * 0.35) + (mlScore * 0.65)));
+  }
   // The language model is useful as a second opinion, but it is too eager on
   // short, ordinary messages. Keep message-only predictions light unless the
   // transparent rule engine found supporting evidence.

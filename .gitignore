@@ -1,3 +1,6 @@
 node_modules/
 .env
 npm-debug.log*
+data/url_dataset.jsonl
+data/url_model.joblib
+__pycache__/
