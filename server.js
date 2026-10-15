@@ -9,6 +9,17 @@ const publicDirectory = path.join(__dirname, 'public');
 const scanHistory = [];
 const phishingModel = new PhishingModel();
 
+// Held-out URL model evaluation from the reproducible training run documented
+// in README.md. Live scans do not include ground-truth labels, so they cannot
+// be used to calculate a valid confusion matrix.
+const modelEvaluation = {
+  dataset: 'URL model holdout',
+  samples: 2000,
+  labels: ['Legitimate', 'Phishing'],
+  matrix: [[987, 13], [30, 970]],
+  metrics: { accuracy: 0.9785, precision: 0.9868, recall: 0.97, f1: 0.9783 }
+};
+
 app.use(express.json());
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -180,6 +191,7 @@ app.get('/api/dashboard', (req, res) => {
     totalScans: scanHistory.length,
     riskCounts: counts,
     recentScans: scanHistory.slice(0, 10),
+    modelEvaluation,
   });
 });
 

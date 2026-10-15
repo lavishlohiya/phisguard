@@ -181,6 +181,34 @@
             </table>
           </div>
         </div>
+
+        <div class="evaluation-card" aria-labelledby="evaluation-title">
+          <div class="evaluation-heading">
+            <div>
+              <div class="eyebrow">MODEL VALIDATION</div>
+              <h3 id="evaluation-title">URL detector confusion matrix</h3>
+            </div>
+            <span class="evaluation-note" id="evaluation-dataset">Held-out validation set</span>
+          </div>
+          <p class="evaluation-copy">Predicted labels compared with known labels from the URL-model holdout. Live session scans are not included because they do not have verified ground truth.</p>
+          <div class="matrix-layout">
+            <div class="matrix-axis matrix-axis-predicted">PREDICTED</div>
+            <div class="matrix-table-wrap">
+              <div class="matrix-column-labels" aria-hidden="true"><span>Legitimate</span><span>Phishing</span></div>
+              <table class="confusion-matrix" aria-label="URL detector confusion matrix">
+                <thead><tr><th scope="col">Actual \ Predicted</th><th scope="col">Legitimate</th><th scope="col">Phishing</th></tr></thead>
+                <tbody id="confusion-matrix-body">
+                  <tr><th scope="row">Legitimate</th><td>987</td><td>13</td></tr>
+                  <tr><th scope="row">Phishing</th><td>30</td><td>970</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="matrix-legend"><span><i class="legend-good"></i>Correct prediction</span><span><i class="legend-error"></i>Misclassification</span></div>
+          <div class="evaluation-metrics" id="evaluation-metrics" aria-label="Model evaluation metrics">
+            <span><strong>97.85%</strong> accuracy</span><span><strong>98.68%</strong> precision</span><span><strong>97.00%</strong> recall</span><span><strong>97.83%</strong> F1</span>
+          </div>
+        </div>
       </section>
 
       <!-- Steps Section -->

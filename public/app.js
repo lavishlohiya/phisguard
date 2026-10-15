@@ -11,6 +11,9 @@ const statHigh = document.querySelector('#stat-high');
 const statMed = document.querySelector('#stat-med');
 const statLow = document.querySelector('#stat-low');
 const historyTbody = document.querySelector('#history-tbody');
+const confusionMatrixBody = document.querySelector('#confusion-matrix-body');
+const evaluationDataset = document.querySelector('#evaluation-dataset');
+const evaluationMetrics = document.querySelector('#evaluation-metrics');
 
 const apiOrigin = window.location.port === '3000' || window.location.port === '' ? window.location.origin : 'http://localhost:3000';
 
@@ -202,6 +205,8 @@ async function fetchDashboard() {
       cachedScans = data.recentScans;
     }
 
+    renderModelEvaluation(data.modelEvaluation);
+
     if (historyTbody && data.recentScans && data.recentScans.length > 0) {
       historyTbody.innerHTML = data.recentScans.map((scan) => {
         const time = new Date(scan.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -219,6 +224,23 @@ async function fetchDashboard() {
     }
   } catch (err) {
     console.debug('Dashboard fetch suppressed:', err);
+  }
+}
+
+function renderModelEvaluation(evaluation) {
+  if (!evaluation || !Array.isArray(evaluation.matrix) || evaluation.matrix.length !== 2) return;
+  const matrix = evaluation.matrix;
+  if (confusionMatrixBody) {
+    confusionMatrixBody.innerHTML = matrix.map((row, rowIndex) => `
+      <tr><th scope="row">${rowIndex === 0 ? 'Legitimate' : 'Phishing'}</th>
+        <td class="${rowIndex === 0 ? 'matrix-correct' : 'matrix-error'}">${Number(row[0])}</td>
+        <td class="${rowIndex === 1 ? 'matrix-correct' : 'matrix-error'}">${Number(row[1])}</td>
+      </tr>`).join('');
+  }
+  if (evaluationDataset) evaluationDataset.textContent = `${evaluation.dataset || 'Held-out validation set'} · ${evaluation.samples || 0} samples`;
+  if (evaluationMetrics && evaluation.metrics) {
+    const labels = [['accuracy', 'accuracy'], ['precision', 'precision'], ['recall', 'recall'], ['f1', 'F1']];
+    evaluationMetrics.innerHTML = labels.map(([key, label]) => `<span><strong>${(Number(evaluation.metrics[key]) * 100).toFixed(2)}%</strong> ${label}</span>`).join('');
   }
 }
 

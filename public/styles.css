@@ -804,6 +804,54 @@ textarea:focus {
   font-weight: 500;
 }
 
+/* Model evaluation */
+.evaluation-card {
+  margin-top: 16px;
+  padding: 20px;
+  background: var(--canvas-elevated);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+}
+
+.evaluation-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.evaluation-heading h3 {
+  margin: 5px 0 0;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.evaluation-note, .evaluation-copy, .matrix-legend, .evaluation-metrics {
+  color: var(--mute);
+  font-size: 12px;
+}
+
+.evaluation-note { font-family: var(--font-mono); white-space: nowrap; }
+.evaluation-copy { max-width: 680px; line-height: 18px; margin: 12px 0 20px; }
+
+.matrix-layout { display: flex; gap: 10px; align-items: center; }
+.matrix-axis { color: var(--mute); font: 10px var(--font-mono); letter-spacing: .08em; writing-mode: vertical-rl; transform: rotate(180deg); }
+.matrix-table-wrap { max-width: 520px; width: 100%; }
+.confusion-matrix { width: 100%; border-collapse: separate; border-spacing: 5px; font-size: 13px; }
+.confusion-matrix th { color: var(--mute); font: 11px var(--font-mono); text-align: center; padding: 4px; }
+.confusion-matrix thead th:first-child { text-align: left; }
+.confusion-matrix tbody th { text-align: left; color: var(--body); font-family: var(--font-sans); font-weight: 500; }
+.confusion-matrix td { text-align: center; padding: 18px 12px; border: 1px solid var(--hairline); border-radius: 5px; color: var(--ink); font: 600 17px var(--font-mono); }
+.confusion-matrix td.matrix-correct { background: var(--success-bg); border-color: var(--success-border); color: var(--success); }
+.confusion-matrix td.matrix-error { background: var(--error-bg); border-color: var(--error-border); color: var(--error); }
+.matrix-column-labels { display: none; }
+.matrix-legend { display: flex; gap: 16px; margin: 8px 0 16px 48px; }
+.matrix-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.matrix-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.legend-good { background: var(--success); }.legend-error { background: var(--error); }
+.evaluation-metrics { display: flex; flex-wrap: wrap; gap: 18px; border-top: 1px solid var(--hairline); padding-top: 14px; }
+.evaluation-metrics strong { color: var(--ink); font: 600 13px var(--font-mono); margin-right: 3px; }
+
 /* Steps / Feature Cards Grid */
 .steps-section {
   padding-top: 0;
@@ -933,4 +981,8 @@ textarea:focus {
     gap: 12px;
     align-items: flex-start;
   }
+  .evaluation-heading { flex-direction: column; gap: 8px; }
+  .evaluation-note { white-space: normal; }
+  .confusion-matrix td { padding: 14px 8px; }
+  .matrix-legend { margin-left: 32px; flex-wrap: wrap; }
 }
