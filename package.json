@@ -1,0 +1,23 @@
+{
+  "name": "phisguard",
+  "version": "1.0.0",
+  "description": "PhishGuard — a prototype for detecting suspicious SMS messages, emails, and URLs.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test",
+    "evaluate": "node evaluate.js"
+  },
+  "keywords": [
+    "cybersecurity",
+    "phishing",
+    "fraud-detection"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

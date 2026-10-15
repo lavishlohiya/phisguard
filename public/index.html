@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="PhishGuard helps you understand suspicious messages and links." />
+    <title>PhishGuard — Make suspicious messages clear</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="wordmark" href="#scanner" aria-label="PhishGuard home"><span class="wordmark-mark">P</span><span>PhishGuard</span></a>
+      <nav class="header-actions" aria-label="Primary navigation"><a class="nav-link" href="#how-it-works">How it works</a><a class="button button-ghost" href="#scanner">Open scanner</a><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch theme"><span id="theme-icon" aria-hidden="true">☾</span></button></nav>
+    </header>
+    <main>
+      <section class="hero" aria-labelledby="hero-title"><div class="hero-glow hero-glow-one" aria-hidden="true"></div><div class="hero-glow hero-glow-two" aria-hidden="true"></div><div class="hero-content"><p class="eyebrow">CYBERCUP 6.0 · PROTOTYPE</p><h1 id="hero-title">A second look for the messages you almost trust.</h1><p class="hero-copy">PhishGuard highlights the signals behind suspicious SMS messages, emails, and URLs — so you can decide what happens next.</p><a class="button button-primary" href="#scanner">Check something suspicious <span aria-hidden="true">→</span></a></div><div class="hero-aside" aria-label="Product summary"><div class="signal-card"><div class="signal-card-top"><span class="status-dot"></span><span>Threat analysis</span><span class="mono">READY</span></div><div class="signal-score"><span class="score-ring">—</span><div><strong>Risk, explained</strong><p>Clear indicators.<br />Actionable next steps.</p></div></div><div class="signal-lines"><span></span><span></span><span></span></div></div></div></section>
+      <section class="scanner-section" id="scanner" aria-labelledby="scanner-title"><div class="section-heading"><p class="eyebrow">THE SCANNER</p><h2 id="scanner-title">Paste it before you open it.</h2><p>See the rule-based signals behind a suspicious message or URL. PhishGuard never opens submitted links.</p></div><div class="scanner-card"><div class="scanner-tabs" role="tablist" aria-label="Content type"><button class="tab is-active" type="button" role="tab" aria-selected="true" data-type="SMS message">SMS message</button><button class="tab" type="button" role="tab" aria-selected="false" data-type="Email">Email</button><button class="tab" type="button" role="tab" aria-selected="false" data-type="URL">URL</button></div><label class="sr-only" for="content-input">Content to analyze</label><textarea id="content-input" rows="6" placeholder="Paste a suspicious message, email, or URL here..."></textarea><div class="scanner-footer"><span id="input-hint">Message mode checks message language only.</span><button class="button button-primary" id="analyze-button" type="button">Analyze <span aria-hidden="true">↗</span></button></div><p class="scanner-message" id="scanner-message" role="status" aria-live="polite"></p><div id="result-container"></div><div class="demo-section"><p class="eyebrow">TRY FIVE REAL CASES</p><div class="demo-grid"><button class="demo-button" data-demo="0" type="button">Legitimate message</button><button class="demo-button" data-demo="1" type="button">Bank credential scam</button><button class="demo-button" data-demo="2" type="button">Fake job offer</button><button class="demo-button" data-demo="3" type="button">Look-alike URL</button><button class="demo-button" data-demo="4" type="button">Legitimate URL</button></div></div></div></section>
+      <section class="steps-section" id="how-it-works" aria-labelledby="steps-title"><div class="section-heading compact-heading"><p class="eyebrow">HOW IT WORKS</p><h2 id="steps-title">Less guessing. More signal.</h2></div><div class="steps-grid"><article class="step-card"><span class="step-number">01</span><h3>Drop it in</h3><p>Bring the message or link that raised your eyebrows.</p></article><article class="step-card"><span class="step-number">02</span><h3>See the signals</h3><p>Understand the language, links, and patterns worth questioning.</p></article><article class="step-card"><span class="step-number">03</span><h3>Act with context</h3><p>Get a risk level and a clear explanation before you respond.</p></article></div></section>
+    </main>
+    <footer class="site-footer"><span>PhishGuard</span><span>Rule-based screening · no ML model</span><span class="mono">v0.1.0</span></footer>
+  </body>
+</html>
