@@ -48,6 +48,9 @@ function analyzeUrl(raw) {
   if (/%(?:25|2f|5c|40)/i.test(url.href)) add('encoded-structure', 'Suspicious URL', 14, 'Encoded characters may obscure the destination.');
   if (SUSPICIOUS_PATH_WORDS.test(`${hostname}${url.pathname}`)) add('suspicious-path', 'Suspicious URL', 10, 'The host or path asks for account, verification, payment, or support action.');
   if (labels.slice(0, -2).some((label) => KNOWN_BRANDS.some((brand) => label.includes(brand))) && !KNOWN_BRANDS.some((brand) => domain.startsWith(`${brand}.`) || domain === `${brand}.com`)) add('brand-lookalike', 'Suspicious URL', 24, 'A trusted brand word appears in a subdomain, not the apparent destination domain.');
+  const SUSPICIOUS_TLDS = /\.(?:top|xyz|buzz|fit|work|surf|sbs|monster|rest|click|loan|gq|cf|ml|ga|tk)$/i;
+  if (SUSPICIOUS_TLDS.test(domain)) add('suspicious-tld', 'Suspicious URL', 16, 'The domain utilizes a high-risk or commonly abused top-level domain (TLD).');
+  if (KNOWN_BRANDS.some((b) => domain.includes(`-${b}`) || domain.includes(`${b}-`)) && !KNOWN_BRANDS.some((b) => domain === `${b}.com`)) add('typosquat-brand', 'Suspicious URL', 24, 'The domain name combines a known brand with hyphens or prefixes/suffixes.');
   if (url.protocol === 'https:') details.push({ id: 'https', category: 'Context', points: 0, text: 'HTTPS is present, but encryption alone does not prove that the destination is legitimate.' });
   else add('no-https', 'Suspicious URL', 10, 'The link does not use HTTPS.');
   return { score, indicators: details.map((item) => item.text), indicatorDetails: details, valid: true, category: 'Suspicious URL' };
