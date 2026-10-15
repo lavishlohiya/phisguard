@@ -29,7 +29,16 @@ app.post('/api/analyze', async (req, res) => {
       try {
         const prediction = await phishingModel.predict(req.body.content);
         const label = prediction.label.toLowerCase();
-        const suspicious = /phish|scam|fraud|malicious|spam|label[_ -]?[13]\b/.test(label);
+        const mlFlagged = /phish|scam|fraud|malicious|spam|label[_ -]?[13]\b/.test(label);
+        const text = (req.body.content || '').trim();
+        const wordCount = text.split(/\s+/).filter(Boolean).length;
+        const hasRuleIndicators = (result.indicatorDetails && result.indicatorDetails.length > 0) || result.riskScore > 0;
+        const hasPhishSyntax = /https?:\/\/|\.com\b|\.xyz\b|\.top\b|\.net\b|urgent|account|verify|otp|login|password|kyc|bank/i.test(text);
+        
+        // Corroborate ML signal: require rule corroboration or sufficient length + suspicious keywords
+        // to avoid high false positives on casual, short greetings/text ("hi", "i love you", "event")
+        const suspicious = mlFlagged && (hasRuleIndicators || (wordCount >= 5 && text.length >= 80 && hasPhishSyntax));
+        
         result.modelPrediction = { label: prediction.label, confidence: prediction.confidence, suspicious };
         if (suspicious) {
           result.riskScore = Math.max(result.riskScore, Math.round(prediction.confidence * 100));
@@ -71,7 +80,13 @@ app.post('/api/batch-analyze', async (req, res) => {
           try {
             const pred = await phishingModel.predict(item.content);
             const label = pred.label.toLowerCase();
-            const susp = /phish|scam|fraud|malicious|spam|label[_ -]?[13]\b/.test(label);
+            const mlFlagged = /phish|scam|fraud|malicious|spam|label[_ -]?[13]\b/.test(label);
+            const text = (item.content || '').trim();
+            const wordCount = text.split(/\s+/).filter(Boolean).length;
+            const hasRuleIndicators = (resObj.indicatorDetails && resObj.indicatorDetails.length > 0) || resObj.riskScore > 0;
+            const hasPhishSyntax = /https?:\/\/|\.com\b|\.xyz\b|\.top\b|\.net\b|urgent|account|verify|otp|login|password|kyc|bank/i.test(text);
+            const susp = mlFlagged && (hasRuleIndicators || (wordCount >= 5 && text.length >= 80 && hasPhishSyntax));
+
             resObj.modelPrediction = { label: pred.label, confidence: pred.confidence, suspicious: susp };
             if (susp) {
               resObj.riskScore = Math.max(resObj.riskScore, Math.round(pred.confidence * 100));

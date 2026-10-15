@@ -33,6 +33,9 @@ test('returns category, evidence, and safe actions for common scam families', ()
 test('handles legitimate and borderline messages conservatively', () => {
   assert.equal(analyze({ type: 'message', content: 'Your OTP is 123456.' }).riskLevel, 'Low');
   assert.equal(analyze({ type: 'message', content: 'Your order will arrive tomorrow. Track it in the official app.' }).riskLevel, 'Low');
+  assert.equal(analyze({ type: 'message', content: 'hi' }).riskLevel, 'Low');
+  assert.equal(analyze({ type: 'message', content: 'i love you' }).riskLevel, 'Low');
+  assert.equal(analyze({ type: 'message', content: 'event' }).riskLevel, 'Low');
 });
 test('flags URL shortener services that obscure the destination', () => {
   const result = analyze({ type: 'url', content: 'https://bit.ly/bank-verification-token' });
